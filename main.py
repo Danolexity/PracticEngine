@@ -18,7 +18,7 @@ class GroupFactory:
     def create_group(gr_type):
         if gr_type == "main":
             return MainGtoup
-        elif gr_type == "sub"
+        elif gr_type == "sub":
             return SubGroup
         else:
             return ValueError("Неверный тип группы")
