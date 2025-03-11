@@ -1,7 +1,9 @@
 class Nutrition:
     def __init__(self):
-        self.meals = []
+        self.food_log = {}
 
-    def log_meal(self, name, calories):
-        self.meals.append({"name": name, "calories": calories})
-        print(f"Добавлено: {name}, {calories} ккал")
+    def add_food(self, name, calories):
+        self.food_log[name] = calories
+
+    def get_calories(self, name):
+        return self.food_log.get(name, 0)
