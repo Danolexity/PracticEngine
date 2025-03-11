@@ -2,7 +2,7 @@ from src.model.workout import Workout
 
 """Константы для сообщений об ошибках и форматирования"""
 ERROR_EXPECTED_WORKOUT = "Ожидался объект Workout"
-WORKOUT_MINUTES_LABEL = " минут"
+WORKOUT_MINUTES_LABEL = "минут"
 
 
 class Progress:
@@ -29,5 +29,5 @@ class Progress:
 
         :return: Список строк с описанием тренировок.
         """
-        return [f"{w.workout_type}, {w.duration}\
-                {WORKOUT_MINUTES_LABEL}" for w in self.history]
+        return [f"{w.workout_type}, {w.duration} {WORKOUT_MINUTES_LABEL}"
+                for w in self.history]

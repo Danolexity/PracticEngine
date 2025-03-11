@@ -7,7 +7,9 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 class TestNutrition(unittest.TestCase):
     def test_add_food(self):
-        logging.info("\nТест: добавление еды в дневник питания")
+        logging.info("\n" + "=" * 60)
+        logging.info("Тест: добавление еды в дневник питания")
+        logging.info("=" * 60)
 
         nutrition = Nutrition()
         nutrition.add_food("Овсянка", 350)
@@ -22,6 +24,7 @@ class TestNutrition(unittest.TestCase):
             logging.info("Калорийность добавлена корректно")
 
         logging.info("Тест пройден: еда успешно добавлена в дневник")
+        logging.info("=" * 60)
 
 
 if __name__ == "__main__":

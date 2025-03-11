@@ -7,7 +7,9 @@ logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 class TestUser(unittest.TestCase):
     def test_create_user(self):
-        logging.info("\nТест: создание пользователя")
+        logging.info("\n" + "=" * 60)
+        logging.info("Тест: создание пользователя")
+        logging.info("=" * 60)
 
         user = User("Иван", 25, "ivan@mail.com")
 
@@ -24,6 +26,7 @@ class TestUser(unittest.TestCase):
             logging.info("Email пользователя корректный")
 
         logging.info("Тест пройден: пользователь успешно создан")
+        logging.info("=" * 60)
 
 
 if __name__ == "__main__":

@@ -29,5 +29,9 @@ jobs:
         run: |
           pip install -r requirements.txt || echo "No requirements.txt found"
 
+      - name: Run Flake8 Style Check
+        run: |
+          flake8 fitness-app --count --show-source --statistics
+
       - name: Run Tests
         run: python -m unittest discover -s fitness-app/test
