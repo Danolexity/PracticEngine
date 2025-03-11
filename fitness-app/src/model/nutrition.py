@@ -1,6 +1,10 @@
+"""Константы для сообщений об ошибках"""
+ERROR_INVALID_CALORIES = "Калорийность должна быть положительным числом"
+
+
 class Nutrition:
     """Класс для отслеживания питания и калорийности."""
-    
+
     def __init__(self):
         """Инициализация словаря для хранения информации о еде."""
         self.food_log = {}
@@ -13,7 +17,7 @@ class Nutrition:
         :raises ValueError: Если калорийность <= 0.
         """
         if calories <= 0:
-            raise ValueError("Калорийность должна быть положительным числом")
+            raise ValueError(ERROR_INVALID_CALORIES)
 
         self.food_log[name] = self.food_log.get(name, 0) + calories
 

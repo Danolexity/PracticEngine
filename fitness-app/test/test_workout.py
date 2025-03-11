@@ -4,6 +4,7 @@ from src.model.workout import Workout
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
+
 class TestWorkout(unittest.TestCase):
     def test_workout_init(self):
         logging.info("\nТест: инициализация тренировки")
@@ -16,9 +17,11 @@ class TestWorkout(unittest.TestCase):
 
         with self.subTest(msg="Проверка длительности тренировки"):
             self.assertEqual(workout.duration, 30)
-            logging.info(f"Длительность тренировки корректная: {workout.duration} минут")
+            logging.info(f"Длительность тренировки\
+            корректная: {workout.duration} минут")
 
         logging.info("Тест пройден: объект тренировки успешно создан")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

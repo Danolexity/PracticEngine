@@ -3,6 +3,7 @@ from src.model.workout import Workout
 from src.model.nutrition import Nutrition
 from src.model.progress import Progress
 
+
 def main():
     try:
         user = User("Test", 22, "test@mail.com")
@@ -20,9 +21,10 @@ def main():
 
         print(f"Съедено калорий: {nutrition.get_total_calories()}")
         print("История тренировок:", progress.get_history())
-    
+
     except ValueError as e:
         print(f"Ошибка ввода данных: {e}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,12 @@
+"""Константы для сообщений об ошибках"""
+ERROR_INVALID_DURATION = "Длительность тренировки должна быть больше 0 минут"
+WORKOUT_START_MESSAGE = "Начинаем тренировку"
+WORKOUT_DURATION_LABEL = "Длительность"
+
+
 class Workout:
     """Класс для представления тренировки."""
-    
+
     def __init__(self, workout_type: str, duration: int):
         """
         Инициализация тренировки.
@@ -9,7 +15,7 @@ class Workout:
         :raises ValueError: Если длительность тренировки <= 0.
         """
         if duration <= 0:
-            raise ValueError("Длительность тренировки должна быть больше 0 минут")
+            raise ValueError(ERROR_INVALID_DURATION)
 
         self.workout_type = workout_type
         self.duration = duration
@@ -19,4 +25,5 @@ class Workout:
         Запускает тренировку.
         :return: Сообщение о начале тренировки.
         """
-        return f"Начинаем тренировку: {self.workout_type}, Длительность: {self.duration} минут"
+        return f"{WORKOUT_START_MESSAGE}: {self.workout_type},\
+            {WORKOUT_DURATION_LABEL}: {self.duration} минут"

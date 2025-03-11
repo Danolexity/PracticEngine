@@ -5,6 +5,7 @@ from src.model.workout import Workout
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
+
 class TestProgress(unittest.TestCase):
     def test_track_progress(self):
         logging.info("\nТест: отслеживание прогресса")
@@ -21,6 +22,7 @@ class TestProgress(unittest.TestCase):
             logging.info("Прогресс корректно сохраняется")
 
         logging.info("Тест пройден: прогресс успешно отслеживается")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

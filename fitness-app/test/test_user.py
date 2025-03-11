@@ -4,6 +4,7 @@ from src.model.user import User
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
+
 class TestUser(unittest.TestCase):
     def test_create_user(self):
         logging.info("\nТест: создание пользователя")
@@ -23,6 +24,7 @@ class TestUser(unittest.TestCase):
             logging.info("Email пользователя корректный")
 
         logging.info("Тест пройден: пользователь успешно создан")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
