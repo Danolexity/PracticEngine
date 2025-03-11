@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,4 +27,4 @@ jobs:
           pip install -r requirements.txt || echo "No requirements.txt found"
 
       - name: Run Tests
-        run: python -m unittest discover -s tests || echo "No tests found"
+        run: python -m unittest discover -s test
