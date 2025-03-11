@@ -1,15 +1,18 @@
 import unittest
+import logging
 from src.model.progress import Progress
-from src.model.workout import Workout
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class TestProgress(unittest.TestCase):
-    def test_track_workout(self):
+    def test_track_progress(self):
+        logging.info("🔹 Тест: отслеживание прогресса")
         progress = Progress()
-        workout = Workout("Кардио", 30)
-        progress.track_workout(workout)
-        
-        self.assertEqual(len(progress.history), 1)
-        self.assertEqual(progress.history[0].type, "Кардио")
+        progress.add_progress("Кардио", "30 минут")
 
-if __name__ == "__main__":
-    unittest.main()
+        with self.subTest(msg="Проверка истории тренировок"):
+            self.assertIn("Кардио", progress.get_history())
+            logging.info("Прогресс корректно сохраняется")
+
+        logging.info("Тест пройден: прогресс успешно отслеживается!\n")
