@@ -27,4 +27,4 @@ jobs:
           pip install -r requirements.txt || echo "No requirements.txt found"
 
       - name: Run Tests
-        run: python -m unittest discover -s test
+        run: python -m unittest discover -s fitness-app/test
