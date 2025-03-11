@@ -2,25 +2,23 @@ import unittest
 import logging
 from src.model.workout import Workout
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 class TestWorkout(unittest.TestCase):
     def test_workout_init(self):
-        logging.info("=" * 50)
-        logging.info("🔹 Тест: инициализация тренировки")
+        logging.info("\nТест: инициализация тренировки")
+
         workout = Workout("Кардио", 30)
 
         with self.subTest(msg="Проверка типа тренировки"):
-            self.assertEqual(workout.type, "Кардио")
-            logging.info("Тип тренировки корректный: Кардио")
+            self.assertEqual(workout.workout_type, "Кардио")
+            logging.info(f"Тип тренировки корректный: {workout.workout_type}")
 
         with self.subTest(msg="Проверка длительности тренировки"):
             self.assertEqual(workout.duration, 30)
-            logging.info("Длительность тренировки корректная: 30 минут")
+            logging.info(f"Длительность тренировки корректная: {workout.duration} минут")
 
-        logging.info("Тест пройден: объект тренировки успешно создан!")
-        logging.info("=" * 50 + "\n")
+        logging.info("Тест пройден: объект тренировки успешно создан")
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -4,15 +4,25 @@ from src.model.nutrition import Nutrition
 from src.model.progress import Progress
 
 def main():
-    user = User("Test", 22, "test@mail.com")
-    workout = Workout("Кардио", 30)
-    nutrition = Nutrition()
-    progress = Progress()
+    try:
+        user = User("Test", 22, "test@mail.com")
+        workout = Workout("Кардио", 30)
+        nutrition = Nutrition()
+        progress = Progress()
 
-    user.display_info()
-    workout.start_workout()
-    nutrition.log_meal("Овсянка", 350)
-    progress.track_workout(workout)
+        print(user.display_info())
+        print(workout.start_workout())
+
+        nutrition.add_food("Овсянка", 350)
+        nutrition.add_food("Яблоко", 95)
+
+        progress.add_progress(workout)
+
+        print(f"Съедено калорий: {nutrition.get_total_calories()}")
+        print("История тренировок:", progress.get_history())
+    
+    except ValueError as e:
+        print(f"Ошибка ввода данных: {e}")
 
 if __name__ == "__main__":
     main()
