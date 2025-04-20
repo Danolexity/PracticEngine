@@ -1,0 +1,25 @@
+name: Generate Changelog
+
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    types: [closed]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Generate CHANGELOG.md
+        uses: github-changelog-generator/github-changelog-generator@v1
+        with:
+          USER: Danolexity
+          PROJECT: PracticEngine
+          FUTURE_RELEASE: v1.0.1
+          TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          OUTPUT: CHANGELOG.md
