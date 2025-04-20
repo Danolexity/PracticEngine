@@ -1,11 +1,9 @@
-name: Generate Changelog
+name: Changelog Generator
 
 on:
   push:
-    branches:
-      - main 
-  pull_request:
-    types: [closed]
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -13,13 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
 
-      - name: Generate CHANGELOG.md
-        uses: github-changelog-generator/github-changelog-generator@master
+      - name: Generate Changelog
+        uses: mikepenz/release-changelog-builder-action@v3
         with:
-          USER: Danolexity
-          PROJECT: PracticEngine
-          FUTURE_RELEASE: v1.0.1
-          TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-          OUTPUT: CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
+          configuration: |
+            categories:
+              - title: "New Features"
+                labels: ["feature"]
+              - title: "Bug Fixes"
+                labels: ["bug"]
