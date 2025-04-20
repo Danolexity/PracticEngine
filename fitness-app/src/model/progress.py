@@ -1,4 +1,3 @@
-# progress.py
 from src.model.workout import Workout
 from src.constants import *
 
