@@ -1,12 +1,10 @@
-name: Generate Changelog
+name: Generate and Commit Changelog
 
 on:
   push:
     tags:
       - '*'
-    branches:
-      - main
-  workflow_dispatch:  # Для ручного запуска
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Важно для истории коммитов
+          fetch-depth: 0
 
-      - name: Generate CHANGELOG
+      - name: Generate CHANGELOG.md
         uses: mikepenz/release-changelog-builder-action@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -24,5 +22,16 @@ jobs:
             categories:
               - title: "🚀 Features"
                 labels: ["feature"]
-              - title: "🐛 Bug Fixes"
-                labels: ["bug"]
+
+      - name: Commit and Push
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            git add CHANGELOG.md
+            git commit -m "Update CHANGELOG.md"
+            git push
+          else
+            echo "CHANGELOG.md not found!"
+            exit 1
+          fi
