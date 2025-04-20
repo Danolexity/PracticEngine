@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0 
 
       - name: Generate CHANGELOG.md
-        uses: github-changelog-generator/github-changelog-generator@v1
+        uses: github-changelog-generator/github-changelog-generator@v2.0.0
         with:
           USER: Danolexity
           PROJECT: PracticEngine
