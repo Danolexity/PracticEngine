@@ -1,9 +1,12 @@
-name: Changelog Generator
+name: Generate Changelog
 
 on:
   push:
     tags:
-      - 'v.1.0.0'
+      - '*'
+    branches:
+      - main
+  workflow_dispatch:  # Для ручного запуска
 
 jobs:
   build:
@@ -11,16 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Важно для истории коммитов
 
-      - name: Generate Changelog
+      - name: Generate CHANGELOG
         uses: mikepenz/release-changelog-builder-action@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           configuration: |
             categories:
-              - title: "New Features"
+              - title: "🚀 Features"
                 labels: ["feature"]
-              - title: "Bug Fixes"
+              - title: "🐛 Bug Fixes"
                 labels: ["bug"]
-
