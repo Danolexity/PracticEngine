@@ -1,10 +1,7 @@
-name: Generate and Commit Changelog
+name: Generate Changelog
 
 on:
-  push:
-    tags:
-      - '*'
-  workflow_dispatch:
+  workflow_dispatch:  # Только ручной запуск для тестов
 
 jobs:
   build:
@@ -12,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Полная история коммитов
+          fetch-depth: 0
 
       - name: Generate CHANGELOG.md
         uses: mikepenz/release-changelog-builder-action@v3
@@ -20,24 +17,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           configuration: |
             categories:
-              - title: "Changes"
-                labels: ["*"]  # Все типы PR
+              - title: "All Changes"
+                labels: ["*"]  # Все PR, даже без меток
 
-      - name: Check for CHANGELOG.md
-        id: changelog
+      - name: Debug files
         run: |
+          ls -la
           if [ -f "CHANGELOG.md" ]; then
-            echo "CHANGELOG_EXISTS=true" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ CHANGELOG.md not generated! Check tags/PRs."
-            exit 0  # Не останавливать workflow
+            echo "=== FILE CONTENT ==="
+            cat CHANGELOG.md
           fi
 
-      - name: Commit and Push
-        if: steps.changelog.outputs.CHANGELOG_EXISTS == 'true'
+      - name: Commit to main
+        if: success()
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add CHANGELOG.md
-          git commit -m "Auto-update CHANGELOG.md"
-          git push
+          git commit -m "Add CHANGELOG.md"
+          git push origin main
