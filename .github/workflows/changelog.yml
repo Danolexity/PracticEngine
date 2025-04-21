@@ -18,7 +18,6 @@ jobs:
         uses: mikepenz/release-changelog-builder-action@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fromTag: v0.0.1  # Укажите самый ранний тег (или удалите для полной истории)
           toTag: v1.0.0    # Ваш текущий тег
           configuration: |
             categories:
