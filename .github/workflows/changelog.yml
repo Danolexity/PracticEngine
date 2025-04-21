@@ -1,42 +1,50 @@
-name: Generate and Commit Changelog
+name: Generate Changelog
 
 on:
-  workflow_dispatch:  # Ручной запуск для тестов
+  push:
+    tags:
+      - 'v*'  # Триггер на любые теги, начинающиеся с 'v'
+  workflow_dispatch:
 
 jobs:
-  build:
+  generate_changelog:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Полная история коммитов для анализа изменений
 
       - name: Generate CHANGELOG.md
         uses: mikepenz/release-changelog-builder-action@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fromTag: v0.0.1  # Укажите самый ранний тег (или удалите для полной истории)
+          toTag: v1.0.0    # Ваш текущий тег
           configuration: |
             categories:
-              - title: "All Changes"
-                labels: ["*"]
-            issuesWoLabels: true  # Включает PR без меток
+              - title: "🚀 New Features"
+                labels: ["feature", "enhancement"]
+              - title: "🐛 Bug Fixes"
+                labels: ["bug", "fix"]
+              - title: "📚 Other Changes"
+                labels: ["*"]  # Все остальные изменения
 
-      - name: Check if file exists
-        id: check_file
+      - name: Verify and Commit
         run: |
           if [ -f "CHANGELOG.md" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Changelog content:"
+            head -n 20 CHANGELOG.md  # Покажем начало файла для проверки
+            
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            git add CHANGELOG.md
+            git commit -m "Automatic changelog update for v1.0.0"
+            git push
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "❌ Файл не создан! Проверьте теги/PR."
+            echo "Error: CHANGELOG.md not generated!"
+            echo "Possible reasons:"
+            echo "1. No closed PRs/issues found"
+            echo "2. Configuration error"
             exit 1
           fi
-
-      - name: Commit and Push
-        if: steps.check_file.outputs.exists == 'true'
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add CHANGELOG.md
-          git commit -m "Update CHANGELOG.md"
-          git push
+🔍 Почему это сработает:
