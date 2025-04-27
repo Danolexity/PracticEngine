@@ -19,7 +19,7 @@ def add_workout(user):
     workout_type = input("Введите тип тренировки: ")
     duration = get_int_input("Введите длительность (в минутах): ")
     user.add_workout(Workout(workout_type, duration))
-    print("Тренировка добавлена.")
+    print("Новая тренировка добавлена.")
 
 def add_food(user):
     name = input("Введите название продукта: ")
