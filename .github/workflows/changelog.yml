@@ -6,8 +6,8 @@ on:
       - 'v*'
   workflow_dispatch:
 
-permissions:  # Явно задаем необходимые права
-  contents: write  # Даем разрешение на запись
+permissions: 
+  contents: write 
 
 jobs:
   generate_changelog:
@@ -21,8 +21,8 @@ jobs:
       - name: Create CHANGELOG.md
         run: |
           echo "# Changelog" > CHANGELOG.md
-          echo "## [Unreleased]" >> CHANGELOG.md
-          echo "- Initial version" >> CHANGELOG.md
+          echo "## [2025-04-28]" >> CHANGELOG.md
+          echo "- Первая версия приложения, добавлены функции удаления и изменения еды, программы." >> CHANGELOG.md
 
       - name: Commit and Push
         uses: actions/github-script@v6
