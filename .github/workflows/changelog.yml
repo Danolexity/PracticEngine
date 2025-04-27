@@ -13,8 +13,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}  # Добавьте эту строку
 
-      # Шаг генерации с выходным параметром
       - name: Generate CHANGELOG.md
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v3
@@ -24,22 +24,11 @@ jobs:
             categories:
               - title: "All Changes"
                 labels: ["*"]
-            issuesWoLabels: true
 
-      # Шаг создания fallback-файла (исправленное условие)
-      - name: Create fallback CHANGELOG
-        if: ${{ !steps.changelog.outputs.success }}
-        run: |
-          echo "# Changelog" > CHANGELOG.md
-          echo "## [Unreleased]" >> CHANGELOG.md
-          echo "- Initial changelog setup" >> CHANGELOG.md
-          echo "No closed pull requests found" >> CHANGELOG.md
-
-      # Шаг коммита
       - name: Commit and Push
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add CHANGELOG.md
           git commit -m "Update CHANGELOG.md"
-          git push
+          git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
