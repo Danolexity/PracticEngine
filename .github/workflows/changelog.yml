@@ -14,30 +14,32 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Шаг 1: Генерация CHANGELOG.md (упрощённая конфигурация)
+      # Шаг генерации с выходным параметром
       - name: Generate CHANGELOG.md
+        id: changelog
         uses: mikepenz/release-changelog-builder-action@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           configuration: |
             categories:
               - title: "All Changes"
-                labels: ["*"]  # Включает ВСЕ закрытые PR
-            issuesWoLabels: true  # Даже PR без меток
+                labels: ["*"]
+            issuesWoLabels: true
 
-      # Шаг 2: Принудительное создание файла, если генератор не сработал
+      # Шаг создания fallback-файла (исправленное условие)
       - name: Create fallback CHANGELOG
-        if: !steps.changelog.outputs.success
+        if: ${{ !steps.changelog.outputs.success }}
         run: |
           echo "# Changelog" > CHANGELOG.md
-          echo "## [v1.0.0]" >> CHANGELOG.md
-          echo "- Initial release" >> CHANGELOG.md
+          echo "## [Unreleased]" >> CHANGELOG.md
+          echo "- Initial changelog setup" >> CHANGELOG.md
+          echo "No closed pull requests found" >> CHANGELOG.md
 
-      # Шаг 3: Коммит и пуш
+      # Шаг коммита
       - name: Commit and Push
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add CHANGELOG.md
-          git commit -m "Auto-generated changelog"
+          git commit -m "Update CHANGELOG.md"
           git push
