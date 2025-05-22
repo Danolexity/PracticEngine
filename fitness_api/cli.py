@@ -2,10 +2,34 @@ import requests
 
 API_URL = "http://127.0.0.1:8001/api"
 access_token = None
+refresh_token = None
 
 
 def auth_headers():
     return {"Authorization": f"Bearer {access_token}"}
+
+
+def refresh_access_token():
+    global access_token, refresh_token
+    response = requests.post(f"{API_URL}/auth/refresh/", json={
+        "refresh": refresh_token
+    })
+    if response.status_code == 200:
+        access_token = response.json()["access"]
+        print("🔁 Токен обновлён.")
+    else:
+        print("❌ Не удалось обновить токен:", response.text)
+        exit()
+
+
+def protected_request(method, url, **kwargs):
+    global access_token
+    response = requests.request(method, url, headers=auth_headers(), **kwargs)
+    if response.status_code == 401 and "token_not_valid" in response.text:
+        print("⚠️ Токен просрочен. Обновляю...")
+        refresh_access_token()
+        response = requests.request(method, url, headers=auth_headers(), **kwargs)
+    return response
 
 
 def register():
@@ -28,10 +52,11 @@ def register():
         print("✅ Регистрация прошла успешно.")
     else:
         print("❌ Ошибка:", response.text)
+        exit()
 
 
 def login():
-    global access_token  # Меняем глобальную access_token, а не создаем новую
+    global access_token, refresh_token
     print("\n=== Вход ===")
     username = input("Имя пользователя: ")
     password = input("Пароль: ")
@@ -42,16 +67,19 @@ def login():
     })
 
     if response.status_code == 200:
-        access_token = response.json()["access"]
+        tokens = response.json()
+        access_token = tokens["access"]
+        refresh_token = tokens["refresh"]
         print("✅ Успешный вход.")
     else:
         print("❌ Ошибка входа:", response.text)
+        exit()
 
 
 def show_summary():
-    user = requests.get(f"{API_URL}/auth/me/", headers=auth_headers()).json()
-    workouts = requests.get(f"{API_URL}/workouts/", headers=auth_headers()).json()
-    nutrition = requests.get(f"{API_URL}/nutrition/", headers=auth_headers()).json()
+    user = protected_request("get", f"{API_URL}/auth/me/").json()
+    workouts = protected_request("get", f"{API_URL}/workouts/").json()
+    nutrition = protected_request("get", f"{API_URL}/nutrition/").json()
 
     total_duration = sum(w["duration"] for w in workouts)
     total_calories = sum(f["calories"] for f in nutrition)
@@ -62,12 +90,12 @@ def show_summary():
 
 
 def list_items(endpoint):
-    response = requests.get(f"{API_URL}/{endpoint}/", headers=auth_headers())
+    response = protected_request("get", f"{API_URL}/{endpoint}/")
     if response.status_code == 200:
         return response.json()
     else:
         print("❌ Ошибка:", response.text)
-        return []
+        exit()
 
 
 def add_workout():
@@ -76,7 +104,7 @@ def add_workout():
     workout_type = input("Тип тренировки: ")
     duration = input("Длительность (мин): ")
 
-    response = requests.post(f"{API_URL}/workouts/", headers=auth_headers(), json={
+    response = protected_request("post", f"{API_URL}/workouts/", json={
         "workout_type": workout_type,
         "duration": duration
     })
@@ -85,6 +113,7 @@ def add_workout():
         print("✅ Тренировка добавлена.")
     else:
         print("❌ Ошибка:", response.text)
+        exit()
 
 
 def edit_workout():
@@ -97,7 +126,7 @@ def edit_workout():
     new_type = input("Новый тип тренировки: ")
     new_duration = input("Новая длительность (мин): ")
 
-    response = requests.patch(f"{API_URL}/workouts/{workout_id}/", headers=auth_headers(), json={
+    response = protected_request("patch", f"{API_URL}/workouts/{workout_id}/", json={
         "workout_type": new_type,
         "duration": new_duration
     })
@@ -106,6 +135,7 @@ def edit_workout():
         print("✅ Тренировка обновлена.")
     else:
         print("❌ Ошибка:", response.text)
+        exit()
 
 
 def delete_workout():
@@ -116,11 +146,12 @@ def delete_workout():
 
     workout_id = input("Введите ID тренировки для удаления: ")
 
-    response = requests.delete(f"{API_URL}/workouts/{workout_id}/", headers=auth_headers())
+    response = protected_request("delete", f"{API_URL}/workouts/{workout_id}/")
     if response.status_code == 204:
         print("✅ Тренировка удалена.")
     else:
         print("❌ Ошибка:", response.text)
+        exit()
 
 
 def add_food():
@@ -128,7 +159,7 @@ def add_food():
     name = input("Название продукта: ")
     calories = input("Калории: ")
 
-    response = requests.post(f"{API_URL}/nutrition/", headers=auth_headers(), json={
+    response = protected_request("post", f"{API_URL}/nutrition/", json={
         "name": name,
         "calories": calories
     })
@@ -137,6 +168,7 @@ def add_food():
         print("✅ Продукт добавлен.")
     else:
         print("❌ Ошибка:", response.text)
+        exit()
 
 
 def edit_food():
@@ -149,7 +181,7 @@ def edit_food():
     new_name = input("Новое название: ")
     new_calories = input("Новая калорийность: ")
 
-    response = requests.patch(f"{API_URL}/nutrition/{food_id}/", headers=auth_headers(), json={
+    response = protected_request("patch", f"{API_URL}/nutrition/{food_id}/", json={
         "name": new_name,
         "calories": new_calories
     })
@@ -158,6 +190,7 @@ def edit_food():
         print("✅ Продукт обновлён.")
     else:
         print("❌ Ошибка:", response.text)
+        exit()
 
 
 def delete_food():
@@ -168,11 +201,12 @@ def delete_food():
 
     food_id = input("Введите ID продукта для удаления: ")
 
-    response = requests.delete(f"{API_URL}/nutrition/{food_id}/", headers=auth_headers())
+    response = protected_request("delete", f"{API_URL}/nutrition/{food_id}/")
     if response.status_code == 204:
         print("✅ Продукт удалён.")
     else:
         print("❌ Ошибка:", response.text)
+        exit()
 
 
 def authenticated_menu():
@@ -227,7 +261,7 @@ def main_menu():
                 print("Неверный выбор.")
         else:
             authenticated_menu()
-            access_token = None  # сброс при выходе
+            access_token = None
 
 
 if __name__ == "__main__":
