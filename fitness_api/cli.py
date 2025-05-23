@@ -1,8 +1,17 @@
 import requests
+import subprocess
+
+
 
 API_URL = "http://127.0.0.1:8001/api"
 access_token = None
 refresh_token = None
+
+
+
+def notify(message):
+    subprocess.run(["python", "notify_bot.py", message])
+
 
 
 def auth_headers():
@@ -111,6 +120,7 @@ def add_workout():
 
     if response.status_code == 201:
         print("✅ Тренировка добавлена.")
+        notify(f"Добавлена тренировка: {workout_type}, {duration} мин.")
     else:
         print("❌ Ошибка:", response.text)
         exit()
@@ -133,6 +143,7 @@ def edit_workout():
 
     if response.status_code == 200:
         print("✅ Тренировка обновлена.")
+        notify(f"Обновлена тренировка ID {workout_id}: {new_type}, {new_duration} мин.")
     else:
         print("❌ Ошибка:", response.text)
         exit()
@@ -149,9 +160,11 @@ def delete_workout():
     response = protected_request("delete", f"{API_URL}/workouts/{workout_id}/")
     if response.status_code == 204:
         print("✅ Тренировка удалена.")
+        notify(f"Удалена тренировка ID {workout_id}.")
     else:
         print("❌ Ошибка:", response.text)
         exit()
+
 
 
 def add_food():
@@ -166,6 +179,7 @@ def add_food():
 
     if response.status_code == 201:
         print("✅ Продукт добавлен.")
+        notify(f"Добавлен продукт: {name}, {calories} ккал.")
     else:
         print("❌ Ошибка:", response.text)
         exit()
@@ -188,6 +202,7 @@ def edit_food():
 
     if response.status_code == 200:
         print("✅ Продукт обновлён.")
+        notify(f"Обновлён продукт ID {food_id}: {new_name}, {new_calories} ккал.")
     else:
         print("❌ Ошибка:", response.text)
         exit()
@@ -204,9 +219,11 @@ def delete_food():
     response = protected_request("delete", f"{API_URL}/nutrition/{food_id}/")
     if response.status_code == 204:
         print("✅ Продукт удалён.")
+        notify(f"Удалён продукт ID {food_id}.")
     else:
         print("❌ Ошибка:", response.text)
         exit()
+
 
 
 def authenticated_menu():
