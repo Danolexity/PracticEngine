@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import RegisterView, CurrentUserView, WorkoutViewSet, NutritionViewSet
+from .views import RegisterView, CurrentUserView, WorkoutViewSet, NutritionViewSet, workout_types
 
 router = DefaultRouter()
 router.register(r'workouts', WorkoutViewSet, basename='workout')
@@ -16,5 +16,6 @@ urlpatterns = [
     path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/me/', CurrentUserView.as_view(), name='current_user'),
+    path('workout-types/', workout_types),
     path('', include(router.urls)),
 ]

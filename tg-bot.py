@@ -27,69 +27,122 @@ user_tokens = {}
 logging.basicConfig(level=logging.INFO)
 
 
+
+
+
+
+async def check_logged_in(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Пропускаем команды
+    if update.message.text and update.message.text.startswith("/"):
+        return
+
+    # Пропускаем, если пользователь находится в активном диалоге
+    if "username" in context.user_data and "login_in_progress" in context.user_data:
+        return
+
+    # Если пользователь не авторизован
+    if update.effective_user.id not in user_tokens:
+        await update.message.reply_text("ℹ️ Чтобы пользоваться ботом, введите команду /login")
+
+
 def headers(user_id):
     token = user_tokens.get(user_id, {}).get("access")
     return {"Authorization": f"Bearer {token}"} if token else {}
 
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("👋 Добро пожаловать! Введите /login чтобы начать.")
 
-
 async def login(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data["login_in_progress"] = True
     await update.message.reply_text("Имя пользователя:")
     return LOGIN_USERNAME
-
 
 async def get_username(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['username'] = update.message.text
     await update.message.reply_text("Пароль:")
     return LOGIN_PASSWORD
 
-
 async def get_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data.pop("login_in_progress", None)
     username = context.user_data['username']
     password = update.message.text
     resp = requests.post(f"{API_URL}/auth/login/", json={"username": username, "password": password})
     if resp.status_code == 200:
         user_tokens[update.effective_user.id] = resp.json()
-        await update.message.reply_text("✅ Вход выполнен. Введите /menu")
+        await update.message.reply_text("✅ Вход выполнен.")
+        await menu(update, context)
     else:
         await update.message.reply_text("❌ Ошибка входа")
     return ConversationHandler.END
 
 
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Меню:", reply_markup=MAIN_MENU_KB)
 
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Выберите действие:", reply_markup=MAIN_MENU_KB)
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data.pop("login_in_progress", None)
     await update.message.reply_text("🔙 Возврат в меню.", reply_markup=MAIN_MENU_KB)
     return ConversationHandler.END
 
 
+
 async def summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    u = requests.get(f"{API_URL}/auth/me/", headers=headers(user_id)).json()
-    w = requests.get(f"{API_URL}/workouts/", headers=headers(user_id)).json()
-    n = requests.get(f"{API_URL}/nutrition/", headers=headers(user_id)).json()
-    total_dur = sum(wi['duration'] for wi in w)
-    total_cal = sum(fi['calories'] for fi in n)
-    await update.message.reply_text(
-        f"📊 {u['username']}:\nТренировок: {len(w)} на {total_dur} мин\nПродуктов: {len(n)} на {total_cal} ккал")
+
+    try:
+        # Получаем данные
+        user_resp = requests.get(f"{API_URL}/auth/me/", headers=headers(user_id))
+        workouts_resp = requests.get(f"{API_URL}/workouts/", headers=headers(user_id))
+        foods_resp = requests.get(f"{API_URL}/nutrition/", headers=headers(user_id))
+
+        if user_resp.status_code != 200 or workouts_resp.status_code != 200 or foods_resp.status_code != 200:
+            await update.message.reply_text("❌ Не удалось получить данные. Проверьте авторизацию.")
+            return
+
+        u = user_resp.json()
+        w = workouts_resp.json()
+        n = foods_resp.json()
+
+        if not isinstance(w, list) or not isinstance(n, list):
+            await update.message.reply_text("⚠️ Данные пришли в неверном формате.")
+            return
+
+        total_dur = sum(wi.get('duration', 0) for wi in w)
+        total_cal = sum(fi.get('calories', 0) for fi in n)
+
+        await update.message.reply_text(
+            f"📊 {u['username']}:\n"
+            f"Тренировок: {len(w)} на {total_dur} мин\n"
+            f"Продуктов: {len(n)} на {total_cal} ккал"
+        )
+
+    except Exception as e:
+        logging.exception("Ошибка при выводе отчёта")
+        await update.message.reply_text("❌ Произошла ошибка при получении отчета.")
+
 
 
 # === Добавление ===
-async def add_workout(update, context):
-    await update.message.reply_text("Тип тренировки (Кардио, Силовая...):", reply_markup=ACTION_KB)
-    return ADD_TYPE
+async def add_workout(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        # Получаем список типов тренировок с API
+        response = requests.get(f"{API_URL}/workout-types/")
+        if response.status_code == 200:
+            types = response.json()
+            types_text = "\n".join(f"• {t}" for t in types)
+            await update.message.reply_text(f"Выберите тип тренировки:\n{types_text}",reply_markup=ACTION_KB)
+        else:
+            await update.message.reply_text("❌ Не удалось получить список тренировок", reply_markup=ACTION_KB)
+    except Exception as e:
+        await update.message.reply_text("⚠️ Ошибка при получении типов тренировок", reply_markup=ACTION_KB)
 
+    return ADD_TYPE
 
 async def get_workout_type(update, context):
     context.user_data['type'] = update.message.text
     await update.message.reply_text("Длительность (мин):", reply_markup=ACTION_KB)
     return ADD_DURATION
-
 
 async def get_workout_duration(update, context):
     dur = update.message.text
@@ -100,16 +153,15 @@ async def get_workout_duration(update, context):
     return ConversationHandler.END
 
 
+
 async def add_food(update, context):
     await update.message.reply_text("Название продукта:", reply_markup=ACTION_KB)
     return ADD_FOOD_NAME
-
 
 async def get_food_name(update, context):
     context.user_data['food_name'] = update.message.text
     await update.message.reply_text("Калорийность:", reply_markup=ACTION_KB)
     return ADD_FOOD_CAL
-
 
 async def get_food_cal(update, context):
     resp = requests.post(f"{API_URL}/nutrition/", json={
@@ -119,6 +171,7 @@ async def get_food_cal(update, context):
     return ConversationHandler.END
 
 
+
 # === Редактирование и удаление ===
 async def edit_workout(update, context):
     user_id = update.effective_user.id
@@ -126,7 +179,6 @@ async def edit_workout(update, context):
     workout_list = "\n".join(f"{w['id']}: {w['workout_type']} {w['duration']} мин" for w in workouts)
     await update.message.reply_text(f"Тренировки:\n{workout_list}\n\nВведите ID, тип, длительность через запятую:\nПример: 1, Йога, 30", reply_markup=ACTION_KB)
     return EDIT_WO_INPUT
-
 
 async def handle_edit_workout(update, context):
     try:
@@ -152,7 +204,6 @@ async def edit_food(update, context):
     await update.message.reply_text(f"Продукты:\n{food_list}\n\nВведите ID, название, калорийность через запятую:\nПример: 1, Яблоко, 50", reply_markup=ACTION_KB)
     return EDIT_FOOD_INPUT
 
-
 async def handle_edit_food(update, context):
     try:
         food_id, new_name, new_cal = map(str.strip, update.message.text.split(","))
@@ -170,13 +221,13 @@ async def handle_edit_food(update, context):
     return ConversationHandler.END
 
 
+
 async def delete_workout(update, context):
     user_id = update.effective_user.id
     workouts = requests.get(f"{API_URL}/workouts/", headers=headers(user_id)).json()
     workout_list = "\n".join(f"{w['id']}: {w['workout_type']} {w['duration']} мин" for w in workouts)
     await update.message.reply_text(f"Удаление тренировки:\n{workout_list}\n\nВведите ID для удаления:", reply_markup=ACTION_KB)
     return DEL_WO_ID
-
 
 async def handle_delete_workout(update, context):
     workout_id = update.message.text.strip()
@@ -188,13 +239,13 @@ async def handle_delete_workout(update, context):
     return ConversationHandler.END
 
 
+
 async def delete_food(update, context):
     user_id = update.effective_user.id
     foods = requests.get(f"{API_URL}/nutrition/", headers=headers(user_id)).json()
     food_list = "\n".join(f"{f['id']}: {f['name']} {f['calories']} ккал" for f in foods)
     await update.message.reply_text(f"Удаление продукта:\n{food_list}\n\nВведите ID для удаления:", reply_markup=ACTION_KB)
     return DEL_FOOD_ID
-
 
 async def handle_delete_food(update, context):
     food_id = update.message.text.strip()
@@ -204,6 +255,9 @@ async def handle_delete_food(update, context):
     else:
         await update.message.reply_text("❌ Ошибка удаления.", reply_markup=MAIN_MENU_KB)
     return ConversationHandler.END
+
+
+
 
 
 if __name__ == "__main__":
@@ -285,6 +339,11 @@ if __name__ == "__main__":
     ))
 
     app.add_handler(MessageHandler(filters.Regex("📊 Показать отчёт"), summary))
+
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, check_logged_in),
+        group=2
+    )
 
     print("✅ Бот запущен")
     app.run_polling()

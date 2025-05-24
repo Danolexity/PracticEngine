@@ -2,6 +2,9 @@ from rest_framework import viewsets, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view
+from .models import WORKOUT_TYPES
+
 
 from .models import Workout, Nutrition, User
 from .serializers import (
@@ -49,3 +52,7 @@ class NutritionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+@api_view(['GET'])
+def workout_types(request):
+    return Response([t[0] for t in WORKOUT_TYPES])
